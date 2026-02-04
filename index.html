@@ -1029,18 +1029,23 @@
             }
         });
 
-        // Плавная прокрутка для навигации
+        // Плавная прокрутка для навигации (только для якорных ссылок)
         document.querySelectorAll('nav a').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                const targetId = this.getAttribute('href');
-                const targetElement = document.querySelector(targetId);
-                if (targetElement) {
-                    targetElement.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
+                const href = this.getAttribute('href');
+                
+                // Только для якорных ссылок (начинающихся с #)
+                if (href && href.startsWith('#')) {
+                    e.preventDefault();
+                    const targetElement = document.querySelector(href);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
                 }
+                // Для обычных ссылок (gallery.html) - позволяем браузеру перейти
             });
         });
 
