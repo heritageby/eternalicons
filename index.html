@@ -8,10 +8,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Philosopher:wght@400;700&family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- AR.js и A-Frame для дополненной реальности -->
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-    
     <style>
         :root {
             /* Традиционная белорусская цветовая палитра */
@@ -274,75 +270,6 @@
             margin-bottom: 0.5rem;
         }
 
-        /* AR модальное окно */
-        .ar-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 10000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .ar-modal.active {
-            display: flex;
-        }
-
-        .ar-close {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 3rem;
-            color: white;
-            cursor: pointer;
-            z-index: 10001;
-            background: rgba(0, 0, 0, 0.5);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid white;
-        }
-
-        .ar-info-overlay {
-            position: absolute;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 10px;
-            font-family: var(--font-display);
-            z-index: 10001;
-            text-align: center;
-            max-width: 80%;
-        }
-
-        .marker-status {
-            margin-top: 10px;
-            font-size: 14px;
-            padding: 8px 15px;
-            border-radius: 20px;
-            display: inline-block;
-        }
-
-        .marker-status.found {
-            background: rgba(0, 200, 0, 0.3);
-            border: 2px solid #00ff00;
-        }
-
-        .marker-status.searching {
-            background: rgba(200, 100, 0, 0.3);
-            border: 2px solid #ffaa00;
-        }
-
         @media (max-width: 768px) {
             h1 {
                 font-size: 2.5rem;
@@ -350,11 +277,6 @@
             
             .ar-section h2 {
                 font-size: 2rem;
-            }
-            
-            .ar-info-overlay {
-                font-size: 14px;
-                padding: 10px 15px;
             }
         }
     </style>
@@ -383,7 +305,7 @@
             <p>Адкрыйце 3D-модэлі з дапамогай камеры вашага тэлефона!</p>
             <p>Наведзіце камеру на маркер, каб убачыць інтэрактыўныя аб'екты.</p>
             
-            <button class="ar-button" onclick="startAR()">📱 Запусціць AR</button>
+            <a href="ar-viewer.html" class="ar-button">📱 Запусціць AR</a>
             
             <div class="ar-instructions">
                 <h3>Інструкцыі:</h3>
@@ -405,162 +327,23 @@
         </section>
     </div>
 
-    <!-- AR Модальное окно -->
-    <div id="ar-modal" class="ar-modal">
-        <div class="ar-close" onclick="closeAR()">×</div>
-        
-        <div class="ar-info-overlay">
-            <div id="ar-status">📱 Наведзіце камеру на маркер Hiro</div>
-            <div id="marker-status" class="marker-status searching">Пошук маркера...</div>
-        </div>
-
-        <!-- AR Сцена -->
-        <a-scene
-            id="ar-scene"
-            embedded
-            arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
-            vr-mode-ui="enabled: false"
-            style="width: 100%; height: 100%;">
-            
-            <!-- Определение ресурсов -->
-            <a-assets>
-                <!-- Ваша GLB модель -->
-                <a-asset-item id="model-glb" src="sample.glb"></a-asset-item>
-            </a-assets>
-
-            <!-- Маркер Hiro с вашими моделями -->
-            <a-marker preset="hiro" id="main-marker">
-                
-                <!-- Ваша GLB 3D модель в центре -->
-                <a-entity
-                    gltf-model="#model-glb"
-                    position="0 0.5 0"
-                    scale="0.5 0.5 0.5"
-                    animation="property: rotation; to: 0 360 0; loop: true; dur: 8000; easing: linear">
-                </a-entity>
-                
-                <!-- Дополнительный декор вокруг модели -->
-                <a-ring 
-                    position="0 0 0" 
-                    rotation="-90 0 0" 
-                    radius-inner="0.8" 
-                    radius-outer="1.2" 
-                    color="#8B1538"
-                    opacity="0.6"
-                    animation="property: rotation; to: -90 0 360; loop: true; dur: 10000; easing: linear">
-                </a-ring>
-                
-                <!-- Светящиеся частицы -->
-                <a-sphere 
-                    position="1.5 1 0" 
-                    radius="0.1" 
-                    color="#D4AF37"
-                    animation="property: position; to: 1.5 2 0; dir: alternate; dur: 2000; loop: true; easing: easeInOutQuad">
-                </a-sphere>
-                
-                <a-sphere 
-                    position="-1.5 1 0" 
-                    radius="0.1" 
-                    color="#D4AF37"
-                    animation="property: position; to: -1.5 2 0; dir: alternate; dur: 2000; loop: true; easing: easeInOutQuad; delay: 1000">
-                </a-sphere>
-                
-                <a-sphere 
-                    position="0 1 1.5" 
-                    radius="0.1" 
-                    color="#D4AF37"
-                    animation="property: position; to: 0 2 1.5; dir: alternate; dur: 2000; loop: true; easing: easeInOutQuad; delay: 500">
-                </a-sphere>
-                
-                <!-- Текст -->
-                <a-text 
-                    value="Спадчына Беларусі" 
-                    position="0 2.5 0" 
-                    align="center"
-                    color="#FFFFFF"
-                    width="3"
-                    animation="property: scale; to: 1.1 1.1 1.1; dir: alternate; dur: 1500; loop: true; easing: easeInOutQuad">
-                </a-text>
-                
-                <!-- Подсветка снизу -->
-                <a-plane 
-                    position="0 0 0" 
-                    rotation="-90 0 0" 
-                    width="2" 
-                    height="2" 
-                    color="#7BC8A4" 
-                    opacity="0.3">
-                </a-plane>
-                
-            </a-marker>
-
-            <!-- Камера -->
-            <a-entity camera></a-entity>
-        </a-scene>
-    </div>
-
     <script>
-        // Функция запуска AR
-        function startAR() {
-            const modal = document.getElementById('ar-modal');
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            
-            // Запрос доступа к камере
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ video: true })
-                    .then(function(stream) {
-                        console.log('Камера актывавана');
-                    })
-                    .catch(function(error) {
-                        console.error('Памылка доступу да камеры:', error);
-                        alert('Калі ласка, дазвольце доступ да камеры для працы AR');
-                        closeAR();
-                    });
-            }
-        }
-
-        // Функция закрытия AR
-        function closeAR() {
-            const modal = document.getElementById('ar-modal');
-            modal.classList.remove('active');
-            document.body.style.overflow = 'auto';
-            
-            // Остановка камеры
-            const scene = document.getElementById('ar-scene');
-            if (scene && scene.components && scene.components.arjs) {
-                // AR.js автоматически остановит камеру
-            }
-        }
-
-        // Отслеживание обнаружения маркера
-        window.addEventListener('load', function() {
-            const marker = document.getElementById('main-marker');
-            const statusDiv = document.getElementById('ar-status');
-            const markerStatusDiv = document.getElementById('marker-status');
-            
-            if (marker) {
-                marker.addEventListener('markerFound', function() {
-                    console.log('Маркер знойдзены!');
-                    statusDiv.innerHTML = '✅ Маркер знойдзены! Назірайце модэль!';
-                    markerStatusDiv.innerHTML = 'Маркер актыўны';
-                    markerStatusDiv.className = 'marker-status found';
-                });
-
-                marker.addEventListener('markerLost', function() {
-                    console.log('Маркер страчаны');
-                    statusDiv.innerHTML = '📱 Наведзіце камеру на маркер Hiro';
-                    markerStatusDiv.innerHTML = 'Пошук маркера...';
-                    markerStatusDiv.className = 'marker-status searching';
-                });
-            }
-        });
-
-        // Закрытие AR при нажатии Escape
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeAR();
-            }
+        // Плавная прокрутка для навигации
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                
+                if (href && href.startsWith('#')) {
+                    e.preventDefault();
+                    const targetElement = document.querySelector(href);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+            });
         });
     </script>
 </body>
