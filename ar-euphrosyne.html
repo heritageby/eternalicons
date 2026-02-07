@@ -5,15 +5,13 @@
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <title>AR: Евфросиния Полоцкая</title>
     
-    <!-- AR.js и A-Frame -->
+    <!-- AR.js и A-Frame - ИСПРАВЛЕННЫЕ ССЫЛКИ -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ar.js@3.4.5/aframe/build/aframe-ar.min.js"></script>
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { margin: 0; overflow: hidden; font-family: 'Arial', sans-serif; }
-
-        /* Я УБРАЛ БЛОК С VIDEO !IMPORTANT - ОН ЛОМАЛ ТРЕКИНГ */
 
         .close-button {
             position: absolute;
@@ -190,15 +188,16 @@
 
     <!-- 
       ИСПРАВЛЕНО:
-      1. Вернул настройки как у друга (mono_and_matrix).
-      2. Убрал жесткие sourceWidth/Height (они конфликтовали с мобилками).
+      1. Изменил ссылку на AR.js на стабильный CDN
+      2. Оптимизировал настройки detectionMode
+      3. Добавил patternRatio для лучшего распознавания
     -->
     <a-scene
         id="ar-scene"
         embedded
-        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; patternRatio: 0.75;"
         vr-mode-ui="enabled: false"
-        renderer="antialias: true; alpha: true; precision: medium;"
+        renderer="antialias: true; alpha: true; precision: medium; logarithmicDepthBuffer: true;"
         loading-screen="enabled: false">
         
         <a-assets>
@@ -207,16 +206,18 @@
 
         <!-- 
           ИСПРАВЛЕНО: 
-          Убрал patternRatio="0.75" (оставил дефолтный 0.5, как у друга),
-          иначе трекинг не срабатывает.
+          Добавил patternRatio="0.75" для улучшения распознавания
+          Оптимизировал параметры smooth для стабильности
         -->
         <a-marker 
             type="pattern" 
             url="pattern-efra.patt" 
-            id="main-marker" 
+            id="main-marker"
+            patternRatio="0.75"
             smooth="true" 
-            smoothCount="5" 
+            smoothCount="10" 
             smoothTolerance="0.01"
+            smoothThreshold="5"
             emitevents="true">
             
             <!-- Главная 3D модель -->
@@ -264,7 +265,9 @@
                 if (scene && scene.components && scene.components.arjs) {
                     scene.components.arjs.stopVideo();
                 }
-            } catch(e) { console.log(e); }
+            } catch(e) { 
+                console.log('Ошибка остановки видео:', e); 
+            }
             window.location.href = 'gallery.html';
         }
 
@@ -277,10 +280,22 @@
             const statusText = document.getElementById('status-text');
             const markerStatus = document.getElementById('marker-status');
 
-            setTimeout(() => {
-                loadingScreen.classList.add('hidden');
-                console.log('AR готов!');
-            }, 2500); 
+            // Проверяем загрузку AR.js
+            const scene = document.querySelector('a-scene');
+            if (scene) {
+                scene.addEventListener('renderstart', function() {
+                    console.log('✅ AR.js запущен успешно');
+                    setTimeout(() => {
+                        loadingScreen.classList.add('hidden');
+                        console.log('AR готов!');
+                    }, 1500);
+                });
+            } else {
+                // Если сцена не загрузилась, скрываем экран загрузки через 3 секунды
+                setTimeout(() => {
+                    loadingScreen.classList.add('hidden');
+                }, 3000);
+            }
 
             if (marker) {
                 marker.addEventListener('markerFound', function() {
@@ -301,7 +316,14 @@
                     markerStatus.innerHTML = '🔍 Поиск изображения...';
                     markerStatus.className = 'marker-status searching';
                 });
+            } else {
+                console.error('❌ Маркер не найден в DOM');
             }
+        });
+
+        // Обработка ошибок
+        window.addEventListener('error', function(e) {
+            console.error('Ошибка загрузки:', e.message);
         });
     </script>
 </body>
